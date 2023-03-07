@@ -1,4 +1,7 @@
 pipeline{
+    tools {
+        maven 'maven3'
+    }
 
     agent any 
 
@@ -10,7 +13,7 @@ pipeline{
 
                 script{
                  
-                 git branch: 'main', url: 'https://github.com/sulbiraj06/counter-app-k8s.git'
+                 git branch: 'master', url: 'https://github.com/sulbiraj06/counter-app-k8s.git'
 
                 }
             }
@@ -37,30 +40,6 @@ pipeline{
                 }
              }
         }
-        stage('Static Code Analysis'){
-
-             steps{
-
-              script{
-                   
-                  withSonarQubeEnv(credentialsId: 'sonar-api') {
-                     
-                     sh 'mvn clean package sonar:sonar'
-                  }
-                }
-             }
-        }
-        stage('Quality Gate status Check'){
-
-             steps{
-
-              script{
-                   
-                   waitForQualityGate abortPipeline: false, credentialsId: 'sonar-api'
-
-                }
-             }
-        }
         stage('Maven Build'){
 
              steps{
@@ -72,6 +51,39 @@ pipeline{
                 }
              }
         }
+        stage('Static Code Analysis'){
+             steps{
+                script{
+                  withSonarQubeEnv(credentialsId: 'sonar-api-key') { 
+                    sh 'mvn clean package sonar:sonar'
+                    }
+                }
+             }
+        }
+        stage('Quality Gate status Check'){
+             steps{
+                script{
+                   waitForQualityGate abortPipeline: false, credentialsId: 'sonar-api-key'                   
+                }
+             }
+        }
+        stage('Upload JAR to Nexus'){
+            steps{
+                script{
+                    def readPomVersion = readMavenPom file : 'pom.xml'
+
+                    nexusArtifactUploader artifacts: [[artifactId: 'springboot', classifier: '', file: 'target/Uber.jar', type: 'jar']], 
+                    credentialsId: 'nexus-creds', 
+                    groupId: 'com.example', 
+                    nexusUrl: '3.213.160.126:8081', 
+                    nexusVersion: 'nexus3', 
+                    protocol: 'http', 
+                    repository: 'counterapp-release', 
+                    version: "${readPomVersion.version}"
+                }
+            }
+        }
+
         stage('Docker image Building'){
 
              steps{
