@@ -86,28 +86,21 @@ pipeline{
         }
 
         stage('Docker image Building'){
-
              steps{
-
-              script{
-                   
+              script{                   
                    sh 'docker image build -t $JOB_NAME:v1.$BUILD_ID .'
-                   sh 'docker image tag $JOB_NAME:v1.$BUILD_ID vikashashoke/$JOB_NAME:v1.$BUILD_ID'
-                   sh 'docker image tag $JOB_NAME:v1.$BUILD_ID vikashashoke/$JOB_NAME:latest'
-
+                   sh 'docker image tag $JOB_NAME:v1.$BUILD_ID sulbiraj/$JOB_NAME:v1.$BUILD_ID'
+                   sh 'docker image tag $JOB_NAME:v1.$BUILD_ID sulbiraj/$JOB_NAME:latest'
                 }
              }
         }
         stage('Docker image push'){
-
              steps{
-
               script{
-                   withCredentials([string(credentialsId: 'dockerhub_passwd', variable: 'dockerhub_passwd')]) {
-                     
-                     sh 'docker login -u vikashashoke -p ${dockerhub_passwd}'
-                     sh 'docker image push vikashashoke/$JOB_NAME:v1.$BUILD_ID'
-                     sh 'docker image push vikashashoke/$JOB_NAME:latest'
+                   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {                     
+                     sh 'docker login -u sulbiraj -p ${dockerhub_passwd}'
+                     sh 'docker image push sulbiraj/$JOB_NAME:v1.$BUILD_ID'
+                     sh 'docker image push sulbiraj/$JOB_NAME:latest'
                   }
                 }
              }
