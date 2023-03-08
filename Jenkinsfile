@@ -114,7 +114,7 @@ pipeline{
                     }
                     if(apply) {
                         sh """
-                            kubect1 apply -f . 
+                            kubectl apply -f . 
                         """;
                     }
                 }
