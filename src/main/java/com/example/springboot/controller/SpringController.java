@@ -23,7 +23,7 @@ public class SpringController {
 //		Integer sec = date.getSecond();
 		val++;
 //		Integer count = year + month + day + hour + min + sec + 1;
-		String result = "Hey..!! You have viewed this portal " + val "times";
+		String result = "Hey..!! You have viewed this portal " + val + "times";
 		return result;
 	}
 }
