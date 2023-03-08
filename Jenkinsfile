@@ -92,14 +92,14 @@ pipeline{
                 }
             }
         }
-        stage('eks connect') { 
+        stage('EKS connect') { 
             steps { 
                 sh """
                     aws eks --region ${params.region} update-kubeconfig --name ${params.cluster} 
                 """;
             }
         }
-        stage('eks deployments') { 
+        stage('EKS deployments') { 
             when { expression { params.action == 'create'}} 
             steps {
                 script { 
@@ -115,6 +115,27 @@ pipeline{
                     if(apply) {
                         sh """
                             kubectl apply -f . 
+                        """;
+                    }
+                }
+            }
+        }
+        stage('EKS Destroy') { 
+            when { expression { params.action == 'destroy'}} 
+            steps {
+                script { 
+                    def destroy = false 
+                    try{
+                        input message : 'please confirm to destroy the deploymnts', ok : 'Ready to destroy' 
+                        destroy = true
+                    }
+                    catch(err) {
+                        destroy = false
+                        CurrentBuild.result= 'UNSTABLE'
+                    }
+                    if(destroy) {
+                        sh """
+                            kubectl delete -f . 
                         """;
                     }
                 }
