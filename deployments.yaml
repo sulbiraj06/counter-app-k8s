@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mydeployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: myspringbootapp
+  template:
+    metadata:
+      labels:
+        app: myspringbootapp
+    spec:
+      containers:
+      - name: myspringbootapp
+        image: sulbiraj/counter-app-end2end-k8s:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9099
+
+

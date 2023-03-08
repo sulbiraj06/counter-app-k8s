@@ -2,7 +2,14 @@ pipeline{
     tools {
         maven 'maven3'
     }
-    agent any 
+    agent any
+
+    parameters {
+        choice(name : 'action', choices: 'create\ndestroy', description : 'Create or Destroy the eks cluster') 
+        string(name : 'cluster', defaultValue : 'demo-eks', description : 'EKS cluster name') 
+        string(name : 'region', defaultValue : 'us-east-1', description : 'EKS cluster region')
+    }
+
     stages{
         stage('Git Checkout'){
             steps{
@@ -84,6 +91,35 @@ pipeline{
                   }
                 }
             }
-        } 
+        }
+        stage('eks connect') { 
+            steps { 
+                sh """
+                    aws eks --region ${params.region} update-kubeconfig --name ${params.cluster} 
+                """;
+            }
+        }
+        stage('eks deployments') { 
+            when { expression { params.action == 'create'}} 
+            steps {
+                script { 
+                    def apply = false 
+                    try{
+                        input message : 'please confirm to apply the deploymnts', ok : 'Ready to apply' 
+                        apply = true
+                    }
+                    catch(err) {
+                        apply = false
+                        CurrentBuild.result= 'UNSTABLE'
+                    }
+                    if(apply) {
+                        sh """
+                            kubect1 apply -f . 
+                        """;
+                    }
+                }
+            }
+        }
     }
+
 }
